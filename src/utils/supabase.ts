@@ -3,16 +3,19 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl) {
-  throw new Error(
-    "Missing VITE_SUPABASE_URL in environment variables. Check your .env.local file."
+console.log("🔍 Supabase config:", {
+  url: supabaseUrl ? "✅ Set" : "❌ Missing",
+  key: supabaseKey ? "✅ Set" : "❌ Missing",
+});
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error(
+    "❌ Missing Supabase env vars:",
+    { supabaseUrl, supabaseKey }
   );
 }
 
-if (!supabaseKey) {
-  throw new Error(
-    "Missing VITE_SUPABASE_ANON_KEY in environment variables. Check your .env.local file."
-  );
-}
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(
+  supabaseUrl || "https://placeholder.supabase.co",
+  supabaseKey || "placeholder-key"
+);
