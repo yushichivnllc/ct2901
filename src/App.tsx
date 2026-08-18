@@ -5,25 +5,36 @@ import { HistoryModal } from "./components/HistoryModal";
 import { MyQRModal } from "./components/MyQRModal";
 import { StudentStatsModal } from "./components/StudentStatsModal";
 import { ZaloReportModal } from "./components/ZaloReportModal";
+import { DeleteDataModal } from "./components/DeleteDataModal";
+import { AccessDeniedScreen } from "./components/AccessDeniedScreen";
 import { Toast, type ToastMessage } from "./components/Toast";
 import type { Session, AttendanceRecord } from "./utils/helpers";
-import { CLASS_ROSTER } from "./data/classRoster";
+import { CLASS_ROSTER, CAN_BO_LOP } from "./data/classRoster";
+import {
+  saveAttendanceToDatabase,
+  saveAttendanceHistory,
+  saveStudentStatistics,
+} from "./utils/database";
 
 const STORAGE_KEY = "dd-comic-user";
 const SESSIONS_KEY = "dd-comic-sessions";
 
 export default function App() {
   const [userName, setUserName] = useState<string | null>(null);
+  const [isCanBo, setIsCanBo] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [modal, setModal] = useState<null | "history" | "myqr" | "zalo-report">(null);
+  const [modal, setModal] = useState<null | "history" | "myqr" | "zalo-report" | "delete-data">(null);
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
 
   // Load from localStorage
   useEffect(() => {
     const savedUser = localStorage.getItem(STORAGE_KEY);
-    if (savedUser) setUserName(savedUser);
+    if (savedUser) {
+      setUserName(savedUser);
+      setIsCanBo(CAN_BO_LOP.includes(savedUser));
+    }
 
     const savedSessions = localStorage.getItem(SESSIONS_KEY);
     if (savedSessions) {
@@ -50,11 +61,13 @@ export default function App() {
 
   const handleLogin = (name: string) => {
     setUserName(name);
+    setIsCanBo(CAN_BO_LOP.includes(name));
     localStorage.setItem(STORAGE_KEY, name);
   };
 
   const handleLogout = () => {
     setUserName(null);
+    setIsCanBo(false);
     localStorage.removeItem(STORAGE_KEY);
     setModal(null);
   };
@@ -170,11 +183,13 @@ export default function App() {
     [currentSessionId],
   );
 
-  const handleSaveAttendance = useCallback(() => {
-    if (!currentSessionId) {
+  const handleSaveAttendance = useCallback(async () => {
+    if (!currentSessionId || !userName) {
       setToast({ type: "info", message: "Hãy bắt đầu phiên điểm danh trước." });
       return;
     }
+
+    let savedSession: Session | null = null;
 
     setSessions((prev) =>
       prev.map((s) => {
@@ -198,16 +213,81 @@ export default function App() {
           }
         });
 
-        return {
+        const updatedSession = {
           ...s,
           savedAt: now,
           records,
         };
+        savedSession = updatedSession;
+        return updatedSession;
       }),
     );
 
-    setToast({ type: "success", message: "Đã lưu điểm danh phiên hiện tại." });
-  }, [currentSessionId]);
+    // Save to database
+    if (savedSession) {
+      try {
+        // 1. Save attendance records
+        const attendanceResult = await saveAttendanceToDatabase(
+          savedSession,
+          userName
+        );
+        if (!attendanceResult.success) {
+          setToast({
+            type: "error",
+            message: attendanceResult.error || "Lỗi lưu dữ liệu điểm danh",
+          });
+          return;
+        }
+
+        // 2. Save attendance history
+        const historyResult = await saveAttendanceHistory(savedSession, userName);
+        if (!historyResult.success) {
+          console.error("Lỗi lưu lịch sử:", historyResult.error);
+        }
+
+        // 3. Calculate and save student statistics
+        const studentStats = CLASS_ROSTER.map((name) => {
+          const record = savedSession!.records.find(
+            (r) => r.name.toLowerCase() === name.toLowerCase()
+          );
+          return {
+            student_name: name,
+            total_sessions: 1,
+            present_count: record?.status === "present" ? 1 : 0,
+            absent_excused_count:
+              record?.status === "absent-excused" ? 1 : 0,
+            absent_unexcused_count:
+              record?.status === "absent-unexcused" ? 1 : 0,
+            attendance_rate:
+              record?.status === "present" ? 100 : record ? 0 : 0,
+            recorded_by: userName,
+          };
+        });
+
+        const statsResult = await saveStudentStatistics(studentStats);
+        if (!statsResult.success) {
+          console.error("Lỗi lưu thống kê:", statsResult.error);
+        }
+
+        setToast({
+          type: "success",
+          message:
+            "✅ Đã lưu điểm danh, lịch sử và thống kê lên hệ thống.",
+        });
+      } catch (error) {
+        console.error("Lỗi lưu dữ liệu:", error);
+        setToast({
+          type: "error",
+          message: "Lỗi lưu dữ liệu. Vui lòng thử lại.",
+        });
+      }
+    } else {
+      setToast({
+        type: "success",
+        message: "Đã lưu điểm danh phiên hiện tại.",
+      });
+    }
+  }, [currentSessionId, userName]);
 
   const showToast = useCallback((t: ToastMessage) => {
     setToast(t);
@@ -219,6 +299,10 @@ export default function App() {
     return <AuthScreen onLogin={handleLogin} />;
   }
 
+  if (!isCanBo) {
+    return <AccessDeniedScreen userName={userName} onLogout={handleLogout} />;
+  }
+
   return (
     <>
       <MainScreen
@@ -228,6 +312,7 @@ export default function App() {
         onOpenHistory={() => setModal("history")}
         onOpenMyQR={() => setModal("myqr")}
         onOpenZaloReport={() => setModal("zalo-report")}
+        onOpenDeleteData={() => setModal("delete-data")}
         onScan={handleScan}
         onToast={showToast}
         currentSession={currentSession}
@@ -254,6 +339,15 @@ export default function App() {
           session={currentSession}
           onClose={() => setModal(null)}
           onToast={showToast}
+        />
+      )}
+
+      {modal === "delete-data" && (
+        <DeleteDataModal
+          userName={userName}
+          onClose={() => setModal(null)}
+          onToast={showToast}
+          onDataDeleted={() => setSessions([])}
         />
       )}
 

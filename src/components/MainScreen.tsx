@@ -14,6 +14,7 @@ import {
   Bell,
   Save,
   Send,
+  Trash2,
 } from "lucide-react";
 import { QRScanner } from "./QRScanner";
 import { Avatar } from "./MyQRCode";
@@ -43,6 +44,7 @@ interface MainScreenProps {
   onSaveAttendance: () => void;
   onOpenStudentStats: (name: string) => void;
   onOpenZaloReport: () => void;
+  onOpenDeleteData: () => void;
 }
 
 function StudentInlineQR({ name }: { name: string }) {
@@ -76,6 +78,7 @@ export function MainScreen({
   onSaveAttendance,
   onOpenStudentStats,
   onOpenZaloReport,
+  onOpenDeleteData,
 }: MainScreenProps) {
   const [isPaused, setIsPaused] = useState(false);
   const [scanFlash, setScanFlash] = useState<null | "success" | "error">(null);
@@ -567,6 +570,15 @@ export function MainScreen({
         <button onClick={onOpenMyQR} className="nav-item-primary" title="QR của tôi">
           <QrCode className="h-5 w-5" />
         </button>
+        {isCanBo && (
+          <button
+            onClick={onOpenDeleteData}
+            className="nav-item"
+            title="Xóa dữ liệu test"
+          >
+            <Trash2 className="h-5 w-5" />
+          </button>
+        )}
         <button onClick={onLogout} className="nav-item" title="Thoát">
           <LogOut className="h-5 w-5" />
         </button>
