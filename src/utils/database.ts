@@ -410,10 +410,12 @@ export async function deleteAllAttendanceData(): Promise<{
 }> {
   try {
     // Delete all records from all tables
+    // Lưu ý: không dùng .neq("id", "null") với cột UUID — PostgREST
+    // sẽ báo lỗi 22P02 (invalid input syntax for type uuid).
     const [attendanceError, historyError, statsError] = await Promise.all([
-      supabase.from("attendance_records").delete().neq("id", "null").then((r) => r.error),
-      supabase.from("attendance_history").delete().neq("id", "null").then((r) => r.error),
-      supabase.from("student_statistics").delete().neq("id", "null").then((r) => r.error),
+      supabase.from("attendance_records").delete().not("id", "is", null).then((r) => r.error),
+      supabase.from("attendance_history").delete().not("id", "is", null).then((r) => r.error),
+      supabase.from("student_statistics").delete().not("id", "is", null).then((r) => r.error),
     ]);
 
     if (attendanceError || historyError || statsError) {
@@ -461,7 +463,7 @@ export async function deleteAttendanceDataByUser(
       supabase
         .from("student_statistics")
         .delete()
-        .neq("id", "null")
+        .not("id", "is", null)
         .then((r) => r.error),
     ]);
 
