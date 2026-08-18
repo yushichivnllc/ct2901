@@ -1,0 +1,577 @@
+@import "tailwindcss";
+
+/* ============================================================
+   CLEAN MUSIC-APP UI
+   Soft white canvas · thick ink outlines · pin-dot connectors
+   Teal + amber accents · pill navigation
+   ============================================================ */
+
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --ink: #1c1c1c;
+  --ink-soft: #5c5c66;
+  --ink-faint: #9a9aa3;
+  --line: #1c1c1c;
+  --teal: #3ecad6;
+  --teal-deep: #22b8c6;
+  --amber: #f0a94a;
+  --amber-deep: #e89628;
+  --violet: #7b6cff;
+  --rose: #ff6b8a;
+  --mint: #3ecad6;
+  --shadow: 0 10px 28px rgba(28, 28, 28, 0.06);
+  --radius: 28px;
+}
+
+html,
+body {
+  min-height: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--ink-soft);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(62, 202, 214, 0.12), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(240, 169, 74, 0.12), transparent 26%),
+    radial-gradient(circle at 78% 88%, rgba(123, 108, 255, 0.08), transparent 28%),
+    var(--bg);
+  background-attachment: fixed;
+  overflow-x: hidden;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(28, 28, 28, 0.06) 1.4px, transparent 1.4px);
+  background-size: 28px 28px;
+  opacity: 0.45;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Typography aliases (keep existing class names) ---------- */
+.font-comic {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.font-round {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+.font-pixel {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.text-gradient {
+  color: var(--ink);
+  background: none;
+  -webkit-text-fill-color: unset;
+}
+
+/* ============================================================
+   PIN CARD  — thick outline + corner connector dots
+   ============================================================ */
+.panel,
+.card-nb,
+.card-nb-mint,
+.card-nb-pink,
+.card-nb-yellow,
+.card-nb-coral,
+.folder-card {
+  position: relative;
+  background: var(--card);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.panel--pink,
+.panel--mint,
+.panel--lavender,
+.panel--yellow,
+.panel--sky {
+  background: var(--card);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.card-nb-mint { background: #f3fcfd; }
+.card-nb-pink { background: #fff6f8; }
+.card-nb-yellow { background: #fff8ec; }
+.card-nb-coral { background: #f5f7ff; }
+
+.pin {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--ink);
+  z-index: 2;
+}
+.pin-tl { top: 18px; left: -6px; }
+.pin-tr { top: 18px; right: -6px; }
+.pin-bl { bottom: 18px; left: -6px; }
+.pin-br { bottom: 18px; right: -6px; }
+
+.card-pin {
+  position: relative;
+  background: var(--card);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.card-pin::before,
+.card-pin::after {
+  content: "";
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  background: var(--ink);
+  border-radius: 50%;
+  z-index: 2;
+}
+.card-pin::before { top: 20px; left: -6px; }
+.card-pin::after { bottom: 20px; right: -6px; }
+
+.card-pin-alt::before { top: auto; bottom: 20px; left: -6px; }
+.card-pin-alt::after { bottom: auto; top: 20px; right: -6px; }
+
+/* Accent stripe on the right edge of list cards */
+.stripe-teal { box-shadow: inset -6px 0 0 0 var(--teal), var(--shadow); }
+.stripe-amber { box-shadow: inset -6px 0 0 0 var(--amber), var(--shadow); }
+.stripe-violet { box-shadow: inset -6px 0 0 0 var(--violet), var(--shadow); }
+.stripe-rose { box-shadow: inset -6px 0 0 0 var(--rose), var(--shadow); }
+
+/* ============================================================
+   TITLE BAR (repurposed as a slim header strip)
+   ============================================================ */
+.title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 18px 0;
+  background: transparent;
+  border: none;
+}
+
+.title-bar-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-bar-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--amber);
+  border: 2.5px solid var(--ink);
+  color: var(--ink);
+}
+
+/* ============================================================
+   RIBBON → underline tab / chip
+   ============================================================ */
+.ribbon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px 8px;
+  color: var(--ink);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: transparent;
+  border: none;
+  clip-path: none;
+  box-shadow: none;
+}
+
+.ribbon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--amber);
+  border-radius: 99px;
+}
+
+.ribbon--purple,
+.ribbon--mint,
+.ribbon--sky,
+.ribbon--yellow {
+  background: transparent;
+  color: var(--ink);
+}
+
+.ribbon--mint::after { background: var(--teal); }
+.ribbon--sky::after { background: var(--teal); }
+.ribbon--purple::after { background: var(--violet); }
+.ribbon--yellow::after { background: var(--amber); }
+
+/* ============================================================
+   SPEECH BUBBLE → soft outlined note
+   ============================================================ */
+.bubble {
+  position: relative;
+  background: var(--card);
+  border: 2.5px solid var(--ink);
+  border-radius: 22px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+
+.bubble::after {
+  content: none;
+}
+
+.bubble--bottom::after,
+.bubble--top::after,
+.bubble--pink::after {
+  content: none;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn-nb {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 22px;
+  border-radius: 18px;
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--amber);
+  border: 2.5px solid var(--ink);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-nb:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(28, 28, 28, 0.1);
+}
+
+.btn-nb:active {
+  transform: translateY(1px);
+}
+
+.btn-nb-pink {
+  background: var(--rose);
+  color: #fff;
+}
+
+.btn-nb-mint {
+  background: var(--teal);
+  color: #08383d;
+}
+
+.btn-nb-purple {
+  background: var(--violet);
+  color: #fff;
+}
+
+.btn-nb-coral {
+  background: var(--amber);
+  color: var(--ink);
+}
+
+.btn-nb-dark {
+  background: var(--ink);
+  color: #fff;
+}
+
+.btn-glass {
+  background: var(--card);
+  border: 2.5px solid var(--ink);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.btn-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--amber);
+  border: 2.5px solid var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+/* ============================================================
+   INPUT
+   ============================================================ */
+.input-nb {
+  background: var(--card);
+  border: 2.5px solid var(--ink);
+  border-radius: 18px;
+  padding: 13px 18px;
+  font-weight: 600;
+  color: var(--ink);
+  box-shadow: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.input-nb:focus {
+  box-shadow: 0 0 0 4px rgba(62, 202, 214, 0.18);
+}
+
+.input-nb::placeholder {
+  color: var(--ink-faint);
+}
+
+/* ============================================================
+   BADGE
+   ============================================================ */
+.badge-nb {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+}
+
+/* ============================================================
+   POLAROID / QR
+   ============================================================ */
+.polaroid {
+  background: var(--card);
+  border: 2.5px solid var(--ink);
+  border-radius: 24px;
+  padding: 14px 14px 16px;
+  box-shadow: var(--shadow);
+  transform: none;
+}
+
+/* ============================================================
+   SCANNER
+   ============================================================ */
+.corner-bracket {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: var(--teal);
+  border-style: solid;
+  border-width: 0;
+}
+
+.corner-tl {
+  top: 14px;
+  left: 14px;
+  border-top-width: 3px;
+  border-left-width: 3px;
+  border-top-left-radius: 10px;
+}
+.corner-tr {
+  top: 14px;
+  right: 14px;
+  border-top-width: 3px;
+  border-right-width: 3px;
+  border-top-right-radius: 10px;
+}
+.corner-bl {
+  bottom: 14px;
+  left: 14px;
+  border-bottom-width: 3px;
+  border-left-width: 3px;
+  border-bottom-left-radius: 10px;
+}
+.corner-br {
+  bottom: 14px;
+  right: 14px;
+  border-bottom-width: 3px;
+  border-right-width: 3px;
+  border-bottom-right-radius: 10px;
+}
+
+.scanner-success .corner-bracket {
+  border-color: var(--teal-deep);
+}
+
+.scan-line {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  height: 2px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, transparent, var(--teal), transparent);
+  animation: scan-move 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes scan-move {
+  0% { top: 10%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 86%; opacity: 0; }
+}
+
+/* ============================================================
+   DECOR leftover aliases
+   ============================================================ */
+.sparkle-star,
+.sparkle-4,
+.pixel-cross,
+.pixel-cloud {
+  display: none;
+}
+
+.dots-pattern {
+  background-image: radial-gradient(circle, rgba(28, 28, 28, 0.06) 1.2px, transparent 1.2px);
+  background-size: 16px 16px;
+}
+
+.checkered { background: none; }
+.marquee-box { position: relative; }
+
+/* ============================================================
+   BOTTOM NAV — teal pill
+   ============================================================ */
+.bottom-nav {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--teal);
+  border: 2.5px solid var(--ink);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  min-width: min(420px, calc(100vw - 32px));
+  justify-content: space-around;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  color: #0d3d42;
+  font-size: 0;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  border: none;
+  background: transparent;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.nav-item--active {
+  background: var(--amber);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+}
+
+.nav-item-primary {
+  width: 46px;
+  height: 46px;
+  margin: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: #0d3d42;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+
+.nav-item-primary:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.animate-shake { animation: shake 0.4s ease-in-out; }
+
+@keyframes pop-in {
+  0% { transform: scale(0.94) translateY(8px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.animate-pop { animation: pop-in 0.35s ease both; }
+
+.animate-float,
+.animate-wiggle,
+.animate-sparkle,
+.animate-bounce-soft { animation: none; }
+
+@keyframes slide-in {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-in { animation: slide-in 0.3s ease both; }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-overlay {
+  background: rgba(20, 22, 30, 0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #d5d8e2;
+  border-radius: 99px;
+}
