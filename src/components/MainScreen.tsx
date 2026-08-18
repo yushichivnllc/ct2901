@@ -15,6 +15,7 @@ import {
   Save,
   Send,
   Trash2,
+  RefreshCw,
 } from "lucide-react";
 import { QRScanner } from "./QRScanner";
 import { Avatar } from "./MyQRCode";
@@ -45,6 +46,8 @@ interface MainScreenProps {
   onOpenStudentStats: (name: string) => void;
   onOpenZaloReport: () => void;
   onOpenDeleteData: () => void;
+  onSync: () => void;
+  isSyncing?: boolean;
 }
 
 function StudentInlineQR({ name }: { name: string }) {
@@ -79,6 +82,8 @@ export function MainScreen({
   onOpenStudentStats,
   onOpenZaloReport,
   onOpenDeleteData,
+  onSync,
+  isSyncing = false,
 }: MainScreenProps) {
   const [isPaused, setIsPaused] = useState(false);
   const [scanFlash, setScanFlash] = useState<null | "success" | "error">(null);
@@ -425,6 +430,17 @@ export function MainScreen({
             </div>
             {isCanBo && (
               <div className="flex gap-2">
+                <button
+                  onClick={onSync}
+                  disabled={isSyncing}
+                  className="btn-nb rounded-2xl px-3 py-2 font-round text-xs font-bold disabled:opacity-50"
+                  title="Tải phiên điểm danh mới nhất từ các cán bộ khác"
+                >
+                  <RefreshCw
+                    className={`mr-1 inline h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
+                  />
+                  {isSyncing ? "Đang sync..." : "Đồng bộ"}
+                </button>
                 <button
                   onClick={onSaveAttendance}
                   className="btn-nb rounded-2xl px-3 py-2 font-round text-xs font-bold"

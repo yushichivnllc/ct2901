@@ -12,6 +12,10 @@ export interface Session {
   createdAt: number;
   savedAt?: number;
   records: AttendanceRecord[];
+  /** Tên cán bộ lớp đã thực hiện phiên điểm danh */
+  recordedBy?: string;
+  /** ID bản ghi trên Supabase (dùng để dedupe khi đồng bộ) */
+  remoteId?: string;
 }
 
 export function formatTime(timestamp: number): string {
@@ -72,6 +76,10 @@ export function generateZaloReport(session: Session): string {
     message += excusedStudents.map((r) => `- ${r.name}`).join("\n");
   } else {
     message += "- (Không có bạn nào vắng có phép)";
+  }
+
+  if (session.recordedBy) {
+    message += `\n\nNgười thực hiện điểm danh: ${session.recordedBy}`;
   }
 
   return message;

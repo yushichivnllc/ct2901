@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, ChevronRight, Users, ArrowLeft, CalendarDays, Clock } from "lucide-react";
+import { X, ChevronRight, Users, ArrowLeft, CalendarDays, Clock, UserCog } from "lucide-react";
 import type { Session } from "../utils/helpers";
 import { formatDateTime } from "../utils/helpers";
 import { Avatar } from "./MyQRCode";
@@ -101,6 +101,10 @@ export function HistoryModal({ sessions, onClose }: HistoryModalProps) {
                               </p>
                             </div>
                             <div className="mt-1 flex items-center gap-3 font-round text-xs font-bold text-[color:var(--ink-faint)]">
+                              <span className="inline-flex items-center gap-1">
+                                <UserCog className="h-3 w-3" />
+                                {session.recordedBy || "Không rõ"}
+                              </span>
                               <span>{present} có mặt</span>
                               <span>{absent} vắng</span>
                               {excusedN > 0 && <span>{excusedN} có phép</span>}
@@ -139,6 +143,22 @@ export function HistoryModal({ sessions, onClose }: HistoryModalProps) {
 
                 return (
                   <>
+                    {selectedSession.recordedBy && (
+                      <div className="card-pin flex items-center gap-3 p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border-[2.5px] border-[color:var(--ink)] bg-[color:var(--violet)]">
+                          <UserCog className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-round text-[11px] font-bold uppercase text-[color:var(--ink-faint)]">
+                            Người thực hiện phiên
+                          </p>
+                          <p className="font-comic text-lg leading-tight">
+                            {selectedSession.recordedBy}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-4 gap-2">
                       <div className="card-pin p-3 text-center">
                         <Users className="mx-auto h-4 w-4" />

@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS attendance_history (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- 3. Student Statistics Table
+-- 3. Student Statistics Table (thống kê CHUNG toàn lớp)
 CREATE TABLE IF NOT EXISTS student_statistics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   student_name TEXT NOT NULL,
@@ -53,8 +53,19 @@ CREATE TABLE IF NOT EXISTS student_statistics (
   attendance_rate FLOAT DEFAULT 0,
   recorded_by TEXT NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  UNIQUE(student_name, recorded_by)
+  UNIQUE(student_name)
 );
+```
+
+#### ⚠️ Migration cho database đang chạy
+Nếu database của bạn được tạo theo phiên bản cũ (`UNIQUE(student_name, recorded_by)`), chạy thêm SQL sau trong SQL Editor:
+
+```sql
+DELETE FROM student_statistics;
+ALTER TABLE student_statistics
+  DROP CONSTRAINT IF EXISTS student_statistics_student_name_recorded_by_key;
+ALTER TABLE student_statistics
+  ADD CONSTRAINT student_statistics_student_name_key UNIQUE (student_name);
 ```
 
 #### Bước 2: Kiểm tra biến môi trường
@@ -107,9 +118,11 @@ export const CAN_BO_LOP = [
 
 ✅ **Quét QR Code** - Điểm danh nhanh bằng mã QR  
 ✅ **Điểm danh thủ công** - Nhập tay từng học sinh  
-✅ **Thống kê** - Xem thống kê cá nhân từng học sinh  
-✅ **Lịch sử** - Xem lịch sử điểm danh các phiên  
-✅ **Xuất báo cáo Zalo** - Gửi báo cáo qua Zalo cho giáo viên  
+✅ **Ghi tên người thực hiện** - Mỗi phiên lưu kèm tên cán bộ lớp đã điểm danh (hiện trong Lịch sử & báo cáo Zalo)  
+✅ **Đồng bộ giữa các cán bộ lớp** - Tự tải dữ liệu chung khi đăng nhập + nút 🔄 "Đồng bộ" để lấy phiên mới nhất của các cán bộ khác  
+✅ **Thống kê** - Thống kê chung toàn lớp, cộng dồn từ phiên của tất cả cán bộ  
+✅ **Lịch sử** - Xem lịch sử phiên điểm danh của cả nhóm cán bộ (kèm người thực hiện)  
+✅ **Xuất báo cáo Zalo** - Gửi báo cáo qua Zalo cho giáo viên (kèm tên người báo cáo)  
 ✅ **Xóa dữ liệu test** - Xóa dữ liệu khi test  
 ✅ **Lưu Supabase** - Sao lưu dữ liệu cloud  
 

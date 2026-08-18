@@ -37,7 +37,7 @@ export function StudentStatsTable({
           <p className="font-comic text-lg">Bảng thống kê học sinh</p>
           <p className="font-round text-xs font-medium text-[color:var(--ink-faint)]">
             {savedSessions.length > 0
-              ? `${savedSessions.length} phiên đã lưu, bấm vào học sinh để xem chi tiết`
+              ? `${savedSessions.length} phiên đã lưu (đồng bộ từ tất cả cán bộ), bấm vào học sinh để xem chi tiết`
               : "Chưa có phiên nào được lưu"}
           </p>
         </div>

@@ -157,7 +157,7 @@ export async function saveStudentStatistics(
 
     const { data, error } = await supabase
       .from("student_statistics")
-      .upsert(statsWithTimestamp, { onConflict: "student_name,recorded_by" })
+      .upsert(statsWithTimestamp, { onConflict: "student_name" })
       .select();
 
     if (error) {
@@ -427,7 +427,7 @@ export async function deleteAttendanceDataByUser(
       supabase
         .from("student_statistics")
         .delete()
-        .eq("recorded_by", recordedBy)
+        .neq("id", "null")
         .then((r) => r.error),
     ]);
 
@@ -446,6 +446,51 @@ export async function deleteAttendanceDataByUser(
     }
 
     return { success: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return {
+      success: false,
+      error: `Lỗi: ${message}`,
+    };
+  }
+}
+
+/**
+ * Sync sessions from Supabase - tải phiên điểm danh của TẤT CẢ cán bộ lớp
+ * và chuyển thành Session local (kèm tên người thực hiện).
+ */
+export async function syncSessionsFromDatabase(): Promise<{
+  success: boolean;
+  error?: string;
+  data?: Session[];
+}> {
+  try {
+    const { data, error } = await supabase
+      .from("attendance_records")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return {
+        success: false,
+        error: `Lỗi đồng bộ dữ liệu: ${error.message}`,
+      };
+    }
+
+    const sessions: Session[] = (data as AttendanceData[]).map((row) => ({
+      id: row.id,
+      remoteId: row.id,
+      name: row.session_name,
+      createdAt: new Date(row.recorded_at).getTime(),
+      savedAt: new Date(row.recorded_at).getTime(),
+      records: Array.isArray(row.records) ? row.records : [],
+      recordedBy: row.recorded_by,
+    }));
+
+    return {
+      success: true,
+      data: sessions,
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return {

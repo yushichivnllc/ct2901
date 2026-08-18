@@ -41,6 +41,7 @@ CREATE INDEX IF NOT EXISTS idx_history_recorded_at
   ON attendance_history(recorded_at DESC);
 
 -- 3. Student Statistics Table
+-- Thống kê CHUNG toàn lớp (mỗi học sinh 1 dòng, cộng dồn từ phiên của tất cả cán bộ)
 CREATE TABLE IF NOT EXISTS student_statistics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   student_name TEXT NOT NULL,
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS student_statistics (
   attendance_rate FLOAT DEFAULT 0,
   recorded_by TEXT NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  UNIQUE(student_name, recorded_by)
+  UNIQUE(student_name)
 );
 
 -- Create indexes
@@ -74,12 +75,24 @@ CREATE INDEX IF NOT EXISTS idx_stats_updated_at
 --   FOR SELECT USING (recorded_by = auth.jwt()->>'email' OR auth.jwt()->>'email' IS NULL);
 
 -- ============================================
+-- MIGRATION cho database đang chạy (quan trọng!)
+-- ============================================
+-- Nếu bạn đã tạo bảng theo phiên bản cũ (UNIQUE gồm cả recorded_by),
+-- chạy đoạn sau trong SQL Editor để chuyển sang thống kê chung toàn lớp:
+--
+-- DELETE FROM student_statistics;
+-- ALTER TABLE student_statistics
+--   DROP CONSTRAINT IF EXISTS student_statistics_student_name_recorded_by_key;
+-- ALTER TABLE student_statistics
+--   ADD CONSTRAINT student_statistics_student_name_key UNIQUE (student_name);
+
+-- ============================================
 -- Summary
 -- ============================================
 -- Created 3 tables:
--- - attendance_records: Lưu chi tiết điểm danh
+-- - attendance_records: Lưu chi tiết điểm danh (kèm tên người thực hiện: recorded_by)
 -- - attendance_history: Lưu lịch sử phiên điểm danh
--- - student_statistics: Lưu thống kê học sinh
+-- - student_statistics: Lưu thống kê CHUNG toàn lớp (1 dòng / học sinh)
 --
 -- All tables have proper indexes for performance
 -- Ready for data insertion from the web app
