@@ -1,6 +1,12 @@
 import { supabase } from "./supabase";
 import type { Session, AttendanceRecord } from "./helpers";
 
+function formatDbError(scope: string, error: { message?: string; code?: string; hint?: string }): string {
+  const code = error.code ? ` [${error.code}]` : "";
+  const hint = error.hint ? ` — ${error.hint}` : "";
+  return `${scope}${code}: ${error.message || "Unknown error"}${hint}`;
+}
+
 export interface AttendanceData {
   id: string;
   session_name: string;
@@ -36,30 +42,37 @@ export interface AttendanceHistory {
 }
 
 /**
- * Save attendance session to Supabase
+ * Save attendance session to Supabase.
+ * Nếu session đã có remoteId (đã lưu trước đó) thì UPDATE bản ghi cũ
+ * thay vì INSERT mới → tránh trùng lặp dữ liệu khi bấm Lưu nhiều lần.
  */
 export async function saveAttendanceToDatabase(
   session: Session,
   recordedBy: string
 ): Promise<{ success: boolean; error?: string; data?: AttendanceData }> {
   try {
-    const attendanceData: Omit<AttendanceData, "id" | "created_at"> = {
+    const attendanceData: Omit<AttendanceData, "id" | "created_at"> & {
+      id?: string;
+    } = {
       session_name: session.name,
       recorded_by: recordedBy,
       recorded_at: new Date(session.savedAt || Date.now()).toISOString(),
       records: session.records,
     };
+    if (session.remoteId) {
+      attendanceData.id = session.remoteId;
+    }
 
     const { data, error } = await supabase
       .from("attendance_records")
-      .insert([attendanceData])
+      .upsert(attendanceData)
       .select()
       .single();
 
     if (error) {
       return {
         success: false,
-        error: `Lỗi lưu dữ liệu: ${error.message}`,
+        error: formatDbError("Lỗi lưu dữ liệu", error),
       };
     }
 
@@ -163,7 +176,7 @@ export async function saveStudentStatistics(
     if (error) {
       return {
         success: false,
-        error: `Lỗi lưu thống kê: ${error.message}`,
+        error: formatDbError("Lỗi lưu thống kê", error),
       };
     }
 
@@ -218,7 +231,9 @@ export async function fetchStudentStatistics(
 }
 
 /**
- * Save attendance history to Supabase
+ * Save attendance history to Supabase.
+ * Xóa dòng history cũ của session (nếu có) rồi insert lại →
+ * mỗi phiên chỉ có đúng 1 dòng lịch sử khi bấm Lưu nhiều lần.
  */
 export async function saveAttendanceHistory(
   session: Session,
@@ -235,8 +250,27 @@ export async function saveAttendanceHistory(
       (r) => r.status === "absent-unexcused"
     ).length;
 
+    // Luôn dùng remoteId làm session_id nếu có (ổn định khi sync giữa các máy)
+    const stableSessionId = session.remoteId || session.id;
+
+    // Xóa history cũ theo mọi id có thể của phiên này (local id hoặc remoteId)
+    const possibleIds = [session.id];
+    if (session.remoteId && session.remoteId !== session.id) {
+      possibleIds.push(session.remoteId);
+    }
+    const { error: delError } = await supabase
+      .from("attendance_history")
+      .delete()
+      .in("session_id", possibleIds);
+    if (delError) {
+      return {
+        success: false,
+        error: formatDbError("Lỗi cập nhật lịch sử", delError),
+      };
+    }
+
     const historyData = {
-      session_id: session.id,
+      session_id: stableSessionId,
       session_name: session.name,
       recorded_by: recordedBy,
       recorded_at: new Date(session.savedAt || Date.now()).toISOString(),
@@ -255,7 +289,7 @@ export async function saveAttendanceHistory(
     if (error) {
       return {
         success: false,
-        error: `Lỗi lưu lịch sử: ${error.message}`,
+        error: formatDbError("Lỗi lưu lịch sử", error),
       };
     }
 

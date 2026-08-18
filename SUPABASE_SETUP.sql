@@ -62,17 +62,20 @@ CREATE INDEX IF NOT EXISTS idx_stats_updated_at
   ON student_statistics(updated_at DESC);
 
 -- ============================================
--- Enable RLS (Row Level Security) if needed
+-- RLS (Row Level Security)
 -- ============================================
--- Uncomment below if you want to restrict data access
+-- App dùng anon key (không có Supabase Auth) nên phải TẮT RLS
+-- hoặc thêm policy cho phép tất cả. Nếu đang bật RLS mà không có
+-- policy, mọi INSERT/SELECT sẽ bị chặn (lỗi 42501 / dữ liệu trống).
 
--- ALTER TABLE attendance_records ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE attendance_history ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE student_statistics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE attendance_records DISABLE ROW LEVEL SECURITY;
+ALTER TABLE attendance_history DISABLE ROW LEVEL SECURITY;
+ALTER TABLE student_statistics DISABLE ROW LEVEL SECURITY;
 
--- Example RLS Policy (allow users to see only their own data):
--- CREATE POLICY "Users can only see their own data" ON attendance_records
---   FOR SELECT USING (recorded_by = auth.jwt()->>'email' OR auth.jwt()->>'email' IS NULL);
+-- Đảm bảo client có quyền đọc/ghi
+GRANT ALL ON attendance_records TO anon, authenticated;
+GRANT ALL ON attendance_history TO anon, authenticated;
+GRANT ALL ON student_statistics TO anon, authenticated;
 
 -- ============================================
 -- MIGRATION cho database đang chạy (quan trọng!)

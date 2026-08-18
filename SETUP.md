@@ -139,9 +139,30 @@ export const CAN_BO_LOP = [
 2. Kiểm tra Supabase project URL và API key
 3. Chạy lại `npm run build` và `npm run dev`
 
-### ❌ "Lỗi khi lưu dữ liệu"
+### ❌ "Lỗi khi lưu dữ liệu" / "Không lưu được vào Supabase"
 
-**Nguyên nhân:** Các bảng database chưa được tạo
+**Nguyên nhân 1 (phổ biến nhất):** RLS (Row Level Security) đang bật trên bảng mà không có policy → INSERT bị chặn (mã lỗi 42501), SELECT trả rỗng.
+
+**Cách fix:** Mở Supabase SQL Editor và chạy:
+
+```sql
+ALTER TABLE public.attendance_records DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.attendance_history DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.student_statistics DISABLE ROW LEVEL SECURITY;
+
+GRANT ALL ON public.attendance_records TO anon, authenticated;
+GRANT ALL ON public.attendance_history TO anon, authenticated;
+GRANT ALL ON public.student_statistics TO anon, authenticated;
+```
+
+**Nguyên nhân 2:** Thiếu tiền tố `VITE_` trong `.env.local` (VD đặt `NEXT_PUBLIC_SUPABASE_URL` → Vite không đọc được → client gọi `placeholder.supabase.co` → NetworkError).
+
+**Cách fix:**
+1. Đảm bảo `.env.local` có `VITE_SUPABASE_URL` và `VITE_SUPABASE_ANON_KEY`
+2. Restart dev server (`npm run dev`) — Vite chỉ đọc env lúc khởi động
+3. Hard-refresh trình duyệt (Ctrl+Shift+R)
+
+**Nguyên nhân 3:** Các bảng chưa được tạo.
 
 **Cách fix:**
 1. Mở Supabase Console

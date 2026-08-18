@@ -261,7 +261,13 @@ export default function App() {
     }
 
     const existing = sessions.find((s) => s.id === currentSessionId);
-    if (!existing) return;
+    if (!existing) {
+      setToast({
+        type: "error",
+        message: "Không tìm thấy phiên hiện tại. Hãy bắt đầu phiên mới.",
+      });
+      return;
+    }
 
     const now = Date.now();
     const records = [...existing.records];
@@ -325,6 +331,10 @@ export default function App() {
         const historyResult = await saveAttendanceHistory(finalSession, userName);
         if (!historyResult.success) {
           console.error("Lỗi lưu lịch sử:", historyResult.error);
+          setToast({
+            type: "error",
+            message: `⚠️ Điểm danh đã lưu, nhưng lỗi lịch sử: ${historyResult.error}`,
+          });
         }
 
         // 3. Calculate and save statistics from ALL saved sessions
@@ -363,6 +373,10 @@ export default function App() {
         const statsResult = await saveStudentStatistics(studentStats);
         if (!statsResult.success) {
           console.error("Lỗi lưu thống kê:", statsResult.error);
+          setToast({
+            type: "error",
+            message: `⚠️ Điểm danh đã lưu, nhưng lỗi thống kê: ${statsResult.error}`,
+          });
         }
 
         setToast({
