@@ -31,6 +31,16 @@ export function QRScanner({ onScanSuccess, isPaused }: QRScannerProps) {
         setError(null);
         if (!videoRef.current) return;
 
+        // Camera chỉ khả dụng trong secure context (HTTPS hoặc localhost)
+        if (!navigator.mediaDevices?.getUserMedia) {
+          setError(
+            window.isSecureContext
+              ? "Thiết bị/trình duyệt không hỗ trợ camera"
+              : "Camera cần HTTPS hoặc localhost",
+          );
+          return;
+        }
+
         const controls = await codeReader.decodeFromVideoDevice(
           undefined,
           videoRef.current,
@@ -122,7 +132,9 @@ export function QRScanner({ onScanSuccess, isPaused }: QRScannerProps) {
                 {error}
               </p>
               <p className="mt-1 font-round text-sm font-medium text-[color:var(--ink-faint)]">
-                Vui lòng cho phép camera để quét mã QR
+                {error === "Camera cần HTTPS hoặc localhost"
+                  ? "Mở app qua https://... hoặc http://localhost:5173. Hoặc dùng tab Thủ công để điểm danh."
+                  : "Vui lòng cho phép camera để quét mã QR"}
               </p>
             </div>
           </div>
