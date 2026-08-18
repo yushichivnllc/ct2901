@@ -16,13 +16,10 @@ import {
   saveStudentStatistics,
 } from "./utils/database";
 
-console.log("🚀 App.tsx imported, CAN_BO_LOP:", CAN_BO_LOP);
-
 const STORAGE_KEY = "dd-comic-user";
 const SESSIONS_KEY = "dd-comic-sessions";
 
 export default function App() {
-  console.log("🎬 App component rendering");
   const [userName, setUserName] = useState<string | null>(null);
   const [isCanBo, setIsCanBo] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
